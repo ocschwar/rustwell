@@ -1,7 +1,11 @@
 [package]
 name = "rustwell"
 version = "0.1.0"
-authors = ["OMri <ocschwar@mit.edu>"]
+authors = ["Omri <ocschwar@mit.edu>"]
 
 [dependencies]
 rust-sqlite = "0.3.0"
+docopt = "*"
+serde_derive = "*"
+serde = "*"
+time = "*"
