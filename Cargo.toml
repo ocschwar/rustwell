@@ -4,8 +4,9 @@ version = "0.1.0"
 authors = ["Omri <ocschwar@mit.edu>"]
 
 [dependencies]
-rust-sqlite = "0.3.0"
 docopt = "*"
+diesel =         { version = "*", default-features = false, features = ["sqlite"] }
+#diesel_codegen = { version = "*", default-features = false, features = ["sqlite"] }
 serde_derive = "*"
 serde = "*"
-time = "*"
+dotenv = "*"
