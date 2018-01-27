@@ -11,13 +11,13 @@ table! {
 
 table! {
     PhotoTable (id) {
-        id -> Nullable<Integer>,
+        id -> Integer,
         filename -> Text,
         width -> Nullable<Integer>,
         height -> Nullable<Integer>,
         filesize -> Nullable<Integer>,
         timestamp -> Nullable<Integer>,
-        exposure_time -> Nullable<Integer>,
+/*        exposure_time -> Nullable<Integer>,
         orientation -> Nullable<Integer>,
         original_orientation -> Nullable<Integer>,
         import_id -> Nullable<Integer>,
@@ -39,7 +39,7 @@ table! {
         //    develop_shotwell_id -> Nullable<Integer>,
         //      develop_camera_id -> Nullable<Integer>,
         //        develop_embedded_id -> Nullable<Integer>,
-        comment -> Nullable<Text>,
+        comment -> Nullable<Text>,*/
     }
 }
 
