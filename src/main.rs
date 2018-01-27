@@ -1,5 +1,8 @@
+#[recursion_limit="4096"]
 #[macro_use]
 extern crate serde_derive;
+#[macro_use]
+extern crate diesel;
 extern crate serde;
 extern crate docopt;
 //extern crate time;

@@ -5,7 +5,7 @@ authors = ["Omri <ocschwar@mit.edu>"]
 
 [dependencies]
 docopt = "*"
-diesel =         { version = "*", default-features = false, features = ["sqlite"] }
+diesel =         { version = "*", default-features = false, features = ["sqlite", "huge-tables" ] }
 #diesel_codegen = { version = "*", default-features = false, features = ["sqlite"] }
 serde_derive = "*"
 serde = "*"
