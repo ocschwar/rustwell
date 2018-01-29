@@ -72,7 +72,7 @@ impl Deref for DbConn {
     }
 }
 
-#[get("/photos")]
+#[get("/")]
 fn get_photos(conn: DbConn) -> Json<Vec<Photo>> {
     use self::schema::PhotoTable::dsl::*;
     let results = PhotoTable
@@ -81,7 +81,7 @@ fn get_photos(conn: DbConn) -> Json<Vec<Photo>> {
     Json(results)
 }
 
-#[get("/")]
+//#[get("/")]
 fn index(connection: DbConn) -> &'static str {
     use self::schema::PhotoTable::dsl::*;
     let results = PhotoTable
@@ -108,6 +108,7 @@ struct Args {
 
 fn main() {
     rocket::ignite()
+        .mount("/", routes![get_photos])
         .manage(init_pool())
         .launch();
     // TODO: read each resource, dump some contents..
