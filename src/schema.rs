@@ -1,3 +1,4 @@
+
 table! {
     EventTable (id) {
         id -> Nullable<Integer>,
