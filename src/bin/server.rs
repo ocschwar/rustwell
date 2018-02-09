@@ -13,6 +13,7 @@ extern crate r2d2_diesel;
 extern crate r2d2;
 extern crate dotenv;
 extern crate rocket_contrib;
+
 use self::dotenv::dotenv;
 use docopt::Docopt;
 use std::str;
@@ -76,9 +77,11 @@ impl Deref for DbConn {
 #[derive(FromForm)]
 struct PhotoQuery {
     title:Option<String>,
+    re_title:Option<String>,
     md5:Option<String>,
-    filename:Option<String>,
+    filename:Option<String>, 
     comment:Option<String>,
+    re_comment:Option<String>,
     transformations:Option<String>,
     backlinks:Option<String>,
     developer:Option<String>
@@ -104,6 +107,10 @@ fn list_some_photos(conn: DbConn, query:Option<PhotoQuery>) -> Json<Vec<Photo>> 
                 None=>bq,
                 Some(x)=>bq.filter(title.eq(x))
             };
+            bq = match(q.re_title){
+                None=>bq,
+                Some(x)=>bq.filter(title.like(x))
+            };
             bq = match(q.developer){
                 None=>bq,
                 Some(x)=>bq.filter(developer.eq(x))
@@ -120,6 +127,10 @@ fn list_some_photos(conn: DbConn, query:Option<PhotoQuery>) -> Json<Vec<Photo>> 
                 None=>bq,
                 Some(x)=>bq.filter(comment.eq(x))
             };
+            bq = match(q.re_comment){
+                None=>bq,
+                Some(x)=>bq.filter(comment.like(x))
+            };
             bq = match(q.transformations){
                 None=>bq,
                 Some(x)=>bq.filter(transformations.eq(x))
@@ -133,6 +144,7 @@ fn list_some_photos(conn: DbConn, query:Option<PhotoQuery>) -> Json<Vec<Photo>> 
             
     let results = bq.load::<Photo>(&*conn)          
         .expect("Error loading PhotoTable");
+    
 //    results = match 
     Json(results)
 }
