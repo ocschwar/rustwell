@@ -79,6 +79,8 @@ struct PhotoQuery {
     md5:Option<String>,
     filename:Option<String>,
     comment:Option<String>,
+    transformations:Option<String>,
+    backlinks:Option<String>,
     developer:Option<String>
 }
 
@@ -117,6 +119,14 @@ fn list_some_photos(conn: DbConn, query:Option<PhotoQuery>) -> Json<Vec<Photo>> 
             bq = match(q.comment){
                 None=>bq,
                 Some(x)=>bq.filter(comment.eq(x))
+            };
+            bq = match(q.transformations){
+                None=>bq,
+                Some(x)=>bq.filter(transformations.eq(x))
+            };
+            bq = match(q.backlinks){
+                None=>bq,
+                Some(x)=>bq.filter(backlinks.eq(x))
             };
         }
     }
