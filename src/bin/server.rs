@@ -1,3 +1,4 @@
+#![feature(custom_derive)]
 #![feature(plugin)]
 #![plugin(rocket_codegen)]
 extern crate rocket;
@@ -72,14 +73,60 @@ impl Deref for DbConn {
     }
 }
 
+#[derive(FromForm)]
+struct PhotoQuery {
+    title:Option<String>,
+    md5:Option<String>,
+    filename:Option<String>,
+    comment:Option<String>,
+    developer:Option<String>
+}
+
 #[get("/photo")]
 fn list_photos(conn: DbConn) -> Json<Vec<Photo>> {
     use self::schema::PhotoTable::dsl::*;
     let results = PhotoTable
-        .load::<Photo>(&*conn)          
+        .load::<Photo>(&*conn)
         .expect("Error loading PhotoTable");
+     Json(results)
+}
+
+#[get("/photo?<query>")]
+fn list_some_photos(conn: DbConn, query:Option<PhotoQuery>) -> Json<Vec<Photo>> {
+    use self::schema::PhotoTable::dsl::*;
+    let mut bq = PhotoTable.into_boxed();
+    match(query){
+        None => (),
+        Some(q) => {
+            bq = match(q.title){
+                None=>bq,
+                Some(x)=>bq.filter(title.eq(x))
+            };
+            bq = match(q.developer){
+                None=>bq,
+                Some(x)=>bq.filter(developer.eq(x))
+            };
+            bq = match(q.filename){
+                None=>bq,
+                Some(x)=>bq.filter(filename.eq(x))
+            };
+            bq = match(q.md5){
+                None=>bq,
+                Some(x)=>bq.filter(md5.eq(x))
+            };
+            bq = match(q.comment){
+                None=>bq,
+                Some(x)=>bq.filter(comment.eq(x))
+            };
+        }
+    }
+            
+    let results = bq.load::<Photo>(&*conn)          
+        .expect("Error loading PhotoTable");
+//    results = match 
     Json(results)
 }
+
 #[get("/photo/<ID>")]
 fn get_photo(conn:DbConn, ID:i32) -> Json<Photo> {
     use self::schema::PhotoTable::dsl::*;
@@ -106,7 +153,7 @@ struct Args {
 
 fn main() {
     rocket::ignite()
-        .mount("/", routes![list_photos,get_photo])
+        .mount("/", routes![list_photos,get_photo,list_some_photos])
         .manage(init_pool())
         .launch();
     // TODO: read each resource, dump some contents..
