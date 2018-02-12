@@ -1,4 +1,9 @@
-pub enum ObjectStore {};
+pub enum ObjectStore {
+    LocalStore,
+    CifsShare,
+    RemovableStore
+
+};
 // TO change to a type class at a later time.
 
 pub struct LocalStore {
@@ -10,6 +15,6 @@ pub struct CifsShare {
 
 };
 
-pub struct removable {
+pub struct RemovableStore {
 
 }
