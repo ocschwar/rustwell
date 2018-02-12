@@ -87,7 +87,7 @@ struct PhotoQuery {
     developer:Option<String>
 }
 
-#[get("/photo")]
+#[get("/photo",  format = "application/json")]
 fn list_photos(conn: DbConn) -> Json<Vec<Photo>> {
     use self::schema::PhotoTable::dsl::*;
     let results = PhotoTable
@@ -96,7 +96,7 @@ fn list_photos(conn: DbConn) -> Json<Vec<Photo>> {
      Json(results)
 }
 
-#[get("/photo?<query>")]
+#[get("/photo?<query>",  format = "application/json")]
 fn list_some_photos(conn: DbConn, query:Option<PhotoQuery>) -> Json<Vec<Photo>> {
     use self::schema::PhotoTable::dsl::*;
     let mut bq = PhotoTable.into_boxed();
@@ -179,4 +179,5 @@ fn main() {
         .manage(init_pool())
         .launch();
     // TODO: read each resource, dump some contents..
+    // dotenv the port #
 }
