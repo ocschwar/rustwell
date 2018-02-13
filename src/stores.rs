@@ -1,5 +1,7 @@
 pub trait CRUD {
     // All object stores in this framework should implement these.
+
+    // TODO: CHeck Anterofit.
     //
     // Using RLIDWKA as a shout out to the AFS community.
     // https://www.cs.cmu.edu/~help/afs/afs_acls.html
