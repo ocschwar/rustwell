@@ -57,9 +57,9 @@ impl CRUD for LocalStore {
         // Open the path in read-only mode, returns `io::Result<File>`
         let mut file = match File::open(&fpath) {
             // The `description` method of `io::Error` returns a string that
-            // describes the error
-            Err(why) => panic!("couldn't open {}: {}", display,
-                               why.description()),
+            // describes the error (CHECK SYNTAX HERE)
+            Err(why) => return Err("couldn't open {}: {}", display,
+                                   why.description()),
             Ok(file) => file,
         };
 
