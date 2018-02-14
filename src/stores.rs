@@ -8,19 +8,19 @@ pub trait CRUD {
     // The Option<> is to distinbuish between a PUT and a POST.
     // for filesystem stores, use mktemp??
     // i
-    fn create(&self,path:String)->Result<String,String> ;
+    fn create(&self,path:String)->Result<String,Error> ;
     // r
-    fn read(&self,path:String)->Result<String,String> ;
+    fn read(&self,path:String)->Result<String,Error> ;
     // Obtain object meta data, listing a
     // directory or a single resource
     // l
-    fn list(&self,path:String)->Result<Vec<String>>,String> ;
+    fn list(&self,path:String)->Result<Vec<String>>,Error> ;
     //
-    fn write(&self,path:String, content:String) -> Result<String,String>;
+    fn write(&self,path:String, content:String) -> Result<String,Error>;
     // a - update resource meta data
-    fn update(&self,path:String)->Result<String,String> ;
+    fn update(&self,path:String)->Result<String,Error> ;
     // d 
-    fn delete(&self,path:String)->Result<String,String> ;
+    fn delete(&self,path:String)->Result<String,Error> ;
 
 }
 
@@ -40,14 +40,14 @@ pub struct LocalStore {
 impl CRUD for LocalStore {
     // LIST a directory
     // LIST a file
-    fn list(&self,path:String)->Result<Vec<String>>,Err> {
+    fn list(&self,path:String)->Result<Vec<String>>,Error> {
 
 
     };
     //
 
     // open a file for reading.
-    fn read(*&self, path:String) ->Result<String,String> {
+    fn read(&self, path:String) ->Result<String,Error> {
         use std::fs::File;
         use std::io::prelude::*;
         use std::path::{Path, PathBuf};
@@ -60,17 +60,17 @@ impl CRUD for LocalStore {
         let mut file = match File::open(&fpath) {
             // The `description` method of `io::Error` returns a string that
             // describes the error (CHECK SYNTAX HERE)
-            Err(why) => return Err("couldn't open {}: {}", display,
-                                   why.description()),
+            Err(why) => return format!("couldn't open {}: {}", display,
+                                       why.description()),
             Ok(file) => file,
         };
 
         // Read the file contents into a string, returns `io::Result<usize>`
         let mut s = String::new();
         match file.read_to_string(&mut s) {
-            Err(why) => panic!("couldn't read {}: {}", display,
-                               why.description()),
-            Ok(_) => print!("{} contains:\n{}", display, s),
+            Err(why) => format!("couldn't read {}: {}", display,
+                                why.description()),
+            Ok(_) => _;
         }
         
     }
