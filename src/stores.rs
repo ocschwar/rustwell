@@ -14,7 +14,7 @@ pub trait CRUD {
     // Obtain object meta data, listing a
     // directory or a single resource
     // l
-    fn list(&self,path:String)->Result<Vec<String>>,Error> ;
+    fn list(&self,path:String)->Result<Vec<String>,Error> ;
     //
     fn write(&self,path:String, content:String) -> Result<String,Error>;
     // a - update resource meta data
@@ -35,15 +35,16 @@ pub enum ObjectStore {
 
 pub struct LocalStore {
     mount_path: String,    
-};
+}
 
 impl CRUD for LocalStore {
     // LIST a directory
     // LIST a file
-    fn list(&self,path:String)->Result<Vec<String>>,Error> {
-
-
-    };
+    fn list(&self,path:String)->Result<Vec<String>,Error> {
+        use std::fs;
+        let paths = fs::read_dir(path);
+        paths
+    }
     //
 
     // open a file for reading.
@@ -70,7 +71,7 @@ impl CRUD for LocalStore {
         match file.read_to_string(&mut s) {
             Err(why) => format!("couldn't read {}: {}", display,
                                 why.description()),
-            Ok(_) => _;
+            Ok(_) => _
         }
         
     }
@@ -80,7 +81,7 @@ impl CRUD for LocalStore {
 }
 pub struct CifsShare {
 
-};
+}
 
 pub struct RemovableStore {
 

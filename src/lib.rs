@@ -13,6 +13,7 @@ use diesel::sqlite;
 use std::env;
 pub mod schema;
 pub mod models;
+pub mod stores;
 use diesel::sqlite::SqliteConnection;
 
 pub fn establish_connection() -> SqliteConnection {
