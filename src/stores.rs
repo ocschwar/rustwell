@@ -1,3 +1,5 @@
+use std::io;
+
 pub trait CRUD {
     // All object stores in this framework should implement these.
 
@@ -8,19 +10,19 @@ pub trait CRUD {
     // The Option<> is to distinbuish between a PUT and a POST.
     // for filesystem stores, use mktemp??
     // i
-    fn create(&self,path:String)->Result<String,Error> ;
+//    fn create(&self,path:String)->Result<String,&str> ;
     // r
-    fn read(&self,path:String)->Result<String,Error> ;
+    fn read(&self,path:String)->Result<String,io::Error> ;
     // Obtain object meta data, listing a
     // directory or a single resource
     // l
-    fn list(&self,path:String)->Result<Vec<String>,Error> ;
+    fn list(&self,path:String)->Result<Vec<String>,io::Error> ;
     //
-    fn write(&self,path:String, content:String) -> Result<String,Error>;
+//    fn write(&self,path:String, content:String) -> Result<String,&str>;
     // a - update resource meta data
-    fn update(&self,path:String)->Result<String,Error> ;
+//    fn update(&self,path:String)->Result<String,&str> ;
     // d 
-    fn delete(&self,path:String)->Result<String,Error> ;
+//    fn delete(&self,path:String)->Result<String,&str> ;
 
 }
 
@@ -37,23 +39,42 @@ pub struct LocalStore {
     mount_path: String,    
 }
 
+
 impl CRUD for LocalStore {
     // LIST a directory
     // LIST a file
-    fn list(&self,path:String)->Result<Vec<String>,Error> {
+    fn list(&self,path:String)->Result<Vec<String>,io::Error> {
         use std::fs;
+        use std::error::Error;
+        use errors::ResultExt;
         let paths = fs::read_dir(path);
-        paths
+        //.chain_err(|| "unable to open contacts file")?;;
+        match  paths {
+            Ok(ls) => Ok(ls.map(|res|
+                                res.unwrap().
+                                path().
+                                as_os_str().to_str()
+                                .unwrap().to_string()).collect()),
+            //            paths.sort();
+            Err(e) => Err(e)//Err(e)//.description())
+        
+        }
     }
     //
 
     // open a file for reading.
-    fn read(&self, path:String) ->Result<String,Error> {
+    fn read(&self, path:String) ->Result<String,io::Error> {
+        /* Going from a pathbuf to a string to generalize 
+        the trait.
+         */ 
         use std::fs::File;
         use std::io::prelude::*;
+        use std::error::Error;
         use std::path::{Path, PathBuf};
-        let fpath = Path::new(self.mount_path)
-            .join(path)
+        let mpath = Path::new(&self.mount_path);
+        let jpath = mpath
+            .join(&path);
+        let fpath=jpath
             .as_path();
         let display = fpath.display();
 
@@ -61,17 +82,15 @@ impl CRUD for LocalStore {
         let mut file = match File::open(&fpath) {
             // The `description` method of `io::Error` returns a string that
             // describes the error (CHECK SYNTAX HERE)
-            Err(why) => return format!("couldn't open {}: {}", display,
-                                       why.description()),
+            Err(why) => return Err(why),
             Ok(file) => file,
         };
 
         // Read the file contents into a string, returns `io::Result<usize>`
         let mut s = String::new();
         match file.read_to_string(&mut s) {
-            Err(why) => format!("couldn't read {}: {}", display,
-                                why.description()),
-            Ok(_) => _
+            Err(why) => Err(why),
+            Ok(_) => Ok(s)
         }
         
     }
