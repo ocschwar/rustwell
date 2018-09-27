@@ -78,6 +78,9 @@ impl Deref for DbConn {
 struct PhotoQuery {
     title:Option<String>,
     re_title:Option<String>,
+    created_after:Option<i32>,
+    created_before:Option<i32>,
+    limit:Option<i64>,
     md5:Option<String>,
     filename:Option<String>, 
     comment:Option<String>,
@@ -126,6 +129,18 @@ fn list_some_photos(conn: DbConn, query:Option<PhotoQuery>) -> Json<Vec<Photo>> 
             bq = match(q.comment){
                 None=>bq,
                 Some(x)=>bq.filter(comment.eq(x))
+            };
+            bq = match(q.created_after){
+                None=>bq,
+                Some(x)=>bq.filter(time_created.gt(x))
+            };
+            bq = match(q.limit){
+                None=>bq,
+                Some(x)=>bq.limit(x)
+            };
+            bq = match(q.created_before){
+                None=>bq,
+                Some(x)=>bq.filter(time_created.lt(x))
             };
             bq = match(q.re_comment){
                 None=>bq,
