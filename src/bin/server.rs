@@ -81,6 +81,8 @@ struct PhotoQuery {
     created_after:Option<i32>,
     created_before:Option<i32>,
     limit:Option<i64>,
+    offset:Option<i64>,
+    id:Option<i32>,
     md5:Option<String>,
     filename:Option<String>, 
     comment:Option<String>,
@@ -137,6 +139,14 @@ fn list_some_photos(conn: DbConn, query:Option<PhotoQuery>) -> Json<Vec<Photo>> 
             bq = match(q.limit){
                 None=>bq,
                 Some(x)=>bq.limit(x)
+            };
+            bq = match(q.offset){
+                None=>bq,
+                Some(x)=>bq.offset(x)
+            };
+            bq = match(q.id){
+                None=>bq,
+                Some(x)=>bq.filter(id.eq(x))
             };
             bq = match(q.created_before){
                 None=>bq,
