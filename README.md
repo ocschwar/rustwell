@@ -13,5 +13,7 @@ TODO:
 Use THis as a template:
 http://docs.imbo-project.org/en/latest/usage/api.html#images-resource-users-user-images
 
-TODO: add ?ids=[] to the listing to filter by IDS.
-Getting the particular ID should get the image itself. 
+added ?id==ID to the listing to filter by ID (DONE)
+
+Getting the particular ID should get the image itself.
+(Using the object table later)
