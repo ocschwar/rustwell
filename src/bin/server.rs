@@ -18,6 +18,8 @@ use self::dotenv::dotenv;
 use docopt::Docopt;
 use std::str;
 use std::env;
+use std::fs::File;
+use std::io::prelude::*;
 use rustwell::*;
 use self::models::*;
 use diesel::prelude::*;
@@ -173,14 +175,20 @@ fn list_some_photos(conn: DbConn, query:Option<PhotoQuery>) -> Json<Vec<Photo>> 
 //    results = match 
     Json(results)
 }
-
+// TODO: get photo contents for local file....
 #[get("/photo/<ID>")]
-fn get_photo(conn:DbConn, ID:i32) -> Json<Photo> {
+fn get_photo(conn:DbConn, ID:i32) -> Vec<u8> {
     use self::schema::PhotoTable::dsl::*;
     let result = PhotoTable
         .find(ID).first::<Photo>(&*conn)
         .expect("Error loading PhotoTable");
-    Json(result)
+    println!("{:?}", &result.filename);
+    let mut f = File::open(&result.filename).expect("file not found");
+    let mut buffer = Vec::new();
+
+    // read the whole file
+    f.read_to_end(&mut buffer).expect("File unread");    
+    buffer//.clone()
 }
 
 //    rocket::ignite().mount("/", routes![index]).launch();
