@@ -1,3 +1,7 @@
+
+extern crate failure;
+use failure::{Error, ResultExt};
+
 use std::io;
 
 pub trait CRUD {

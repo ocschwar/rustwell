@@ -19,7 +19,7 @@ table! {
         filesize -> Nullable<Integer>,
         timestamp -> Nullable<Integer>,
         exposure_time -> Nullable<Integer>,
-      orientation -> Nullable<Integer>,
+        orientation -> Nullable<Integer>,
         original_orientation -> Nullable<Integer>,
         import_id -> Nullable<Integer>,
         event_id -> Nullable<Integer>,

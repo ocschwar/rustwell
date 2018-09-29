@@ -13,6 +13,7 @@ extern crate r2d2_diesel;
 extern crate r2d2;
 extern crate dotenv;
 extern crate rocket_contrib;
+extern crate rexif;
 
 use self::dotenv::dotenv;
 use docopt::Docopt;
@@ -23,7 +24,7 @@ use std::io::prelude::*;
 use rustwell::*;
 use self::models::*;
 use diesel::prelude::*;
-
+//use rexif;
 use diesel::sqlite::SqliteConnection;
 use r2d2_diesel::ConnectionManager;
 //use rocket::response::content::Json;
@@ -187,8 +188,23 @@ fn get_photo(conn:DbConn, ID:i32) -> Vec<u8> {
     let mut buffer = Vec::new();
 
     // read the whole file
-    f.read_to_end(&mut buffer).expect("File unread");    
-    buffer//.clone()
+    f.read_to_end(&mut buffer).expect("File unread");
+    match rexif::parse_file(&result.filename) {
+        Ok(exif) => {
+            println!("{} {} exif entries: {}", &result.filename,
+                     exif.mime, exif.entries.len());
+            
+            for entry in &exif.entries {
+                println!("  {}: {}",
+                         entry.tag,
+                         entry.value_more_readable);
+            }
+        },
+        Err(e) => {
+            print!("Error in {}: {}", &result.filename, e)
+        }
+    }
+    buffer
 }
 
 //    rocket::ignite().mount("/", routes![index]).launch();

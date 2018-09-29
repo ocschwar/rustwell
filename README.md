@@ -17,3 +17,5 @@ added ?id==ID to the listing to filter by ID (DONE)
 
 Getting the particular ID should get the image itself.
 (Using the object table later)
+
+TODO (Now do pagination - add a .offset() clause)
