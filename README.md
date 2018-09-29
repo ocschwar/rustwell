@@ -6,7 +6,6 @@ Uses Rocket and Diesel.
 
 Note: this is a side project by a father of 3, with limited time and much dad-brain. Expect progress to be slow. 
 
-TODO:
 
 1. More built out services.
 
@@ -21,3 +20,9 @@ Getting the particular ID should get the image itself.
 (Now do pagination - add a .offset() clause)
 
 TODO: POSTs with EXIF
+
+TODO: SHA hashes
+
+TODO: object stores.
+
+TODO: REST Client
