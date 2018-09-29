@@ -21,8 +21,10 @@ Getting the particular ID should get the image itself.
 
 TODO: POSTs with EXIF
 
-TODO: SHA hashes
+- SHA hashes
 
 TODO: object stores.
 
 TODO: REST Client
+
+TODO: Directory search

@@ -14,6 +14,7 @@ extern crate r2d2;
 extern crate dotenv;
 extern crate rocket_contrib;
 extern crate rexif;
+extern crate sha2;
 
 use self::dotenv::dotenv;
 use docopt::Docopt;
@@ -204,6 +205,18 @@ fn get_photo(conn:DbConn, ID:i32) -> Vec<u8> {
             print!("Error in {}: {}", &result.filename, e)
         }
     }
+    use sha2::{Sha512, Digest};
+
+    // create a Sha512 object
+    let mut hasher = Sha512::default();
+
+// write input message
+    hasher.input(&buffer);
+
+    // read hash digest and consume hasher
+    let output = hasher.result();
+    println!("HASH {:}",&output);
+
     buffer
 }
 
