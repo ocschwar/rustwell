@@ -282,10 +282,15 @@ fn process_entries(entries: Entries, mut out: &mut Vec<u8>) -> io::Result<()> {
         let tee = StdoutTee::new(&mut out, &stdout);
         for (k,v) in &entries.fields {
             println!("{} {:?}",k,v);
+            for f in v{
+                println!("{:?}",f);                                
+                match &f.headers.filename {
+                    Some(x) => println!("FName {}",x),
+                    None => println!("NoName")
+                }
+            }
+            
         }
-//        for (k,v) in &entries.files {
-  //          println!("{}", v);
-    //    }
 //        entries.write_debug(tee)?;
     }
     
