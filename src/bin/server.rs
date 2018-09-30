@@ -280,10 +280,16 @@ fn process_entries(entries: Entries, mut out: &mut Vec<u8>) -> io::Result<()> {
     {
         let stdout = io::stdout();
         let tee = StdoutTee::new(&mut out, &stdout);
-        entries.write_debug(tee)?;
+        for (k,v) in &entries.fields {
+            println!("{} {:?}",k,v);
+        }
+//        for (k,v) in &entries.files {
+  //          println!("{}", v);
+    //    }
+//        entries.write_debug(tee)?;
     }
-
-    writeln!(out, "Entries processed")
+    
+    writeln!(out, "Entries processed@!!")
 }
 
 //    rocket::ignite().mount("/", routes![index]).launch();
