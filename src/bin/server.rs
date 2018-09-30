@@ -15,6 +15,8 @@ extern crate dotenv;
 extern crate rocket_contrib;
 extern crate rexif;
 extern crate sha2;
+
+extern crate crypto;
 extern crate multipart;
 use multipart::mock::StdoutTee;
 use multipart::server::Multipart;
@@ -41,6 +43,8 @@ use diesel::sqlite::SqliteConnection;
 use r2d2_diesel::ConnectionManager;
 //use rocket::response::content::Json;
 use rocket_contrib::Json;
+use sha2::{Sha512, Digest};
+
 //use rocket
 // An alias to the type for a pool of Diesel SQLite connections.
 type Pool = r2d2::Pool<ConnectionManager<SqliteConnection>>;
@@ -215,7 +219,6 @@ fn get_photo(conn:DbConn, ID:i32) -> Vec<u8> {
             print!("Error in {}: {}", &result.filename, e)
         }
     }
-    use sha2::{Sha512, Digest};
 
     // create a Sha512 object
     let mut hasher = Sha512::default();
@@ -288,6 +291,35 @@ fn process_entries(entries: Entries, mut out: &mut Vec<u8>) -> io::Result<()> {
                     Some(x) => println!("FName {}",x),
                     None => println!("NoName")
                 }
+                println!("{:?}",f.data.size());
+                let mut r = f.data.readable();
+                match r {
+                    Ok(mut R) => {
+                        println!("readable ");
+                        let mut ibuffer = Vec::new();
+                        // read the whole file
+                        R.read_to_end(&mut ibuffer).expect("File unread");
+                        let mut hasher = Sha512::new();
+
+                        // write input message
+                        hasher.input(&ibuffer);
+
+                        // read hash digest and consume hasher
+                        let output = hasher.result();
+                        println!("HASH {:?}",&output);
+                        match rexif::parse_buffer(&ibuffer) {
+                            Ok(exif) => {
+                                println!("EXIF {:?}",&exif);
+                            },
+                            Err(e) =>{
+                                println!("noexif {:?}",&e);
+                            }
+                        }
+
+                    },
+                    Err(x)=>println!("not readable {:?}",x)
+                }
+
             }
             
         }

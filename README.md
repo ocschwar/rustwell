@@ -19,9 +19,14 @@ Getting the particular ID should get the image itself.
 
 (Now do pagination - add a .offset() clause)
 
-TODO: POSTs with EXIF
+   It takes multiparts now.
+   Can save the images. Can calc hashes and parse EXIF from POSTS
+      
 
 - SHA hashes
+
+TODO: enter posts into Diesel. 
+TODO: result_str for hashes.
 
 TODO: object stores.
 
