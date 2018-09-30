@@ -18,6 +18,9 @@ extern crate sha2;
 
 extern crate crypto;
 extern crate multipart;
+extern crate rustc_serialize;
+
+use rustc_serialize::hex::ToHex;         
 use multipart::mock::StdoutTee;
 use multipart::server::Multipart;
 use multipart::server::save::Entries;
@@ -43,8 +46,8 @@ use diesel::sqlite::SqliteConnection;
 use r2d2_diesel::ConnectionManager;
 //use rocket::response::content::Json;
 use rocket_contrib::Json;
-use sha2::{Sha512, Digest};
-
+use sha2::{Sha512,Digest};
+//use crypto::digest::Digest;
 //use rocket
 // An alias to the type for a pool of Diesel SQLite connections.
 type Pool = r2d2::Pool<ConnectionManager<SqliteConnection>>;
@@ -303,9 +306,9 @@ fn process_entries(entries: Entries, mut out: &mut Vec<u8>) -> io::Result<()> {
 
                         // write input message
                         hasher.input(&ibuffer);
-
+                        
                         // read hash digest and consume hasher
-                        let output = hasher.result();
+                        let output = hasher.result().to_hex();
                         println!("HASH {:?}",&output);
                         match rexif::parse_buffer(&ibuffer) {
                             Ok(exif) => {
@@ -323,7 +326,7 @@ fn process_entries(entries: Entries, mut out: &mut Vec<u8>) -> io::Result<()> {
             }
             
         }
-//        entries.write_debug(tee)?;
+
     }
     
     writeln!(out, "Entries processed@!!")
