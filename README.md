@@ -25,8 +25,10 @@ Getting the particular ID should get the image itself.
 
 - SHA hashes
 
-TODO: enter posts into Diesel. 
-TODO: result_str for hashes.
+TODO: enter posts into Diesel.
+  -  will require moving things out of server.rs at some point. 
+
+result_str for hashes.
 
 TODO: object stores.
 

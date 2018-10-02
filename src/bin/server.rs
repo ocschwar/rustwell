@@ -369,11 +369,14 @@ struct Args {
 }
 
 fn create_photo(conn: &DbConn,
-                filename: &str,
-                buf : &Vec<u8>
-) -> usize {
-    use self::schema::PhotoTable::dsl::*;    
-    let mut new_photo = Photo {
+                fname: & str,
+                buf : & Vec<u8>
+) ->usize {
+    //Photo {
+    use self::schema::PhotoTable::dsl::*;
+
+    let mut  new_photo = Photo {
+        filename:fname.to_string() ,
         ..Default::default()
     };
     match rexif::parse_buffer(&buf) {
@@ -384,11 +387,14 @@ fn create_photo(conn: &DbConn,
             println!("noexif {:?}",&e);
         }
     }
-    
-    diesel::insert_into(PhotoTable)
-        .values(&new_photo)
-        .execute(conn)//get_result(&*conn)
+//    let create_query: QueryResult<Photo> =
+
+        diesel::insert_into(PhotoTable)
+            .values(&new_photo)
+            .execute(&**conn)//
+            //.get_result(&**conn)
         .expect("Error saving new Photo")
+    
 }
 
 

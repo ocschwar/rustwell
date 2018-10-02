@@ -38,7 +38,8 @@ pub struct Video {
     pub         comment : Option<String>,
 }
 #[table_name="PhotoTable"]
-#[derive(Queryable,Identifiable,Debug,Serialize)]
+#[derive(Queryable,Identifiable,
+         Debug,Serialize,Insertable,Default)]
 pub struct Photo {
     pub id: i32,
     pub filename: String, // 

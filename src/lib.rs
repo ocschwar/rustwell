@@ -16,6 +16,8 @@ use std::env;
 pub mod schema;
 pub mod models;
 pub mod stores;
+//pub mod pictures;
+//pub mod dbconn;
 use diesel::sqlite::SqliteConnection;
 
 // Simple and robust error handling with error-chain!

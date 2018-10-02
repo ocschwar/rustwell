@@ -5,8 +5,7 @@ authors = ["Omri <ocschwar@mit.edu>"]
 
 [dependencies]
 docopt = "*"
-diesel =         { version = "*", default-features = false, features = ["sqlite", "huge-tables" ] }
-#diesel_codegen = { version = "*", default-features = false, features = ["sqlite"] }
+diesel =         { version = "*", default-features = false, features = ["sqlite", "64-column-tables" ] }
 serde_derive = "*"
 serde = "*"
 dotenv = "*"
@@ -23,3 +22,4 @@ rexif = "*"
 sha2 = "*"
 multipart = "*"
 crypto = "*"
+rustc-serialize= "*"
