@@ -385,8 +385,9 @@ fn create_photo(conn: &DbConn,
 
     let curs = Cursor::new(buf);
 
-    let mut  new_photo = Photo {
-        filename:fname.to_string() ,        
+    let mut  new_photo = NewPhoto {
+        id:None,
+        filename:fname.to_string() ,
         ..Default::default()
     };
     let mut decoder = Decoder::new(curs);//BufReader::new(f));
@@ -411,7 +412,7 @@ fn create_photo(conn: &DbConn,
         }
     }
 //    let create_query: QueryResult<Photo> =
-
+    println!("{:?}",new_photo);
         diesel::insert_into(PhotoTable)
             .values(&new_photo)
             .execute(&**conn)//
