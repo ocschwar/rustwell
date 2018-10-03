@@ -11,6 +11,7 @@ extern crate diesel;
 extern crate rustwell;
 extern crate rocket_contrib;
 extern crate rexif;
+extern crate jpeg_decoder;
 extern crate sha2;
 
 extern crate crypto;
@@ -45,7 +46,7 @@ use sha2::{Sha512,Digest};
 use std::ops::Deref;
 use rocket::request::{self, FromRequest};
 use rocket::{Request, State, Outcome};
-
+use jpeg_decoder::Decoder;
 //extern crate rocket;
 //extern crate diesel;
 extern crate dotenv;
@@ -215,12 +216,18 @@ fn get_photo(conn:DbConn, ID:i32) -> Vec<u8> {
 
     // read the whole file
     f.read_to_end(&mut buffer).expect("File unread");
+    f.seek(std::io::SeekFrom::Start(0));
+    let mut decoder = Decoder::new(f);//BufReader::new(f));
+    decoder.read_info().expect("failed to read metadata");
+    let metadata = decoder.info().unwrap();
+    println!("{:?}",metadata);
     match rexif::parse_file(&result.filename) {
         Ok(exif) => {
             println!("{} {} exif entries: {}", &result.filename,
                      exif.mime, exif.entries.len());
             
             for entry in &exif.entries {
+                //println!("{:?}",entry);
                 println!("  {}: {}",
                          entry.tag,
                          entry.value_more_readable);
@@ -372,13 +379,29 @@ fn create_photo(conn: &DbConn,
                 fname: & str,
                 buf : & Vec<u8>
 ) ->usize {
-    //Photo {
+
     use self::schema::PhotoTable::dsl::*;
+    use std::io::Cursor;
+
+    let curs = Cursor::new(buf);
 
     let mut  new_photo = Photo {
-        filename:fname.to_string() ,
+        filename:fname.to_string() ,        
         ..Default::default()
     };
+    let mut decoder = Decoder::new(curs);//BufReader::new(f));
+    decoder.read_info().expect("failed to read metadata");
+    let metadata = decoder.info();
+    match metadata {
+        Some(m) => {
+            new_photo.width = Some(m.width as i32);
+            new_photo.height = Some(m.height as i32);
+        },
+        None => {
+            println!("nojpeg ");
+        }
+    }
+    println!("{:?}",metadata);
     match rexif::parse_buffer(&buf) {
         Ok(exif) => {
             println!("EXIF {:?}",&exif);
