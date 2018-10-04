@@ -229,7 +229,7 @@ fn get_photo(conn:DbConn, ID:i32) ->
             print!("Error in {}: {}", &result.filename, e)
         }
     }
-
+        //    NamedFile::open(&path).map_err(|_| NotFound(format!("Bad path: {}", path)))
     let ff = File::open(&result.filename);
     match ff {
         Ok(mut f)=> {
