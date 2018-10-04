@@ -25,10 +25,9 @@ use multipart::server::save::Entries;
 use multipart::server::save::SaveResult::*;
 use rocket::Data;
 use rocket::http::{ContentType,Status};
-use rocket::response::Stream;
-use rocket::response::status::Custom;
+use rocket::response::{Stream,NamedFile};
+use rocket::response::status::{Custom,NotFound};
 
-//use docopt::Docopt;
 use std::str;
 use std::env;
 use std::fs::File;
@@ -203,24 +202,17 @@ fn list_some_photos(conn: DbConn, query:Option<PhotoQuery>) -> Json<Vec<Photo>> 
 //    results = match 
     Json(results)
 }
-// TODO: get photo contents for local file....
+// TODO: get photo  for local file....
+// Result<NamedFile, NotFound<String>> {
 #[get("/photo/<ID>")]
-fn get_photo(conn:DbConn, ID:i32) -> Vec<u8> {
+fn get_photo(conn:DbConn, ID:i32) ->
+    std::result::Result<NamedFile,NotFound<String>>{
+    //, NotFound<String>> {
     use self::schema::PhotoTable::dsl::*;
     let result = PhotoTable
         .find(ID).first::<Photo>(&*conn)
         .expect("Error loading PhotoTable");
     println!("{:?}", &result.filename);
-    let mut f = File::open(&result.filename).expect("file not found");
-    let mut buffer = Vec::new();
-
-    // read the whole file
-    f.read_to_end(&mut buffer).expect("File unread");
-    f.seek(std::io::SeekFrom::Start(0));
-    let mut decoder = Decoder::new(f);//BufReader::new(f));
-    decoder.read_info().expect("failed to read metadata");
-    let metadata = decoder.info().unwrap();
-    println!("{:?}",metadata);
     match rexif::parse_file(&result.filename) {
         Ok(exif) => {
             println!("{} {} exif entries: {}", &result.filename,
@@ -238,17 +230,32 @@ fn get_photo(conn:DbConn, ID:i32) -> Vec<u8> {
         }
     }
 
-    // create a Sha512 object
-    let mut hasher = Sha512::default();
+    let ff = File::open(&result.filename);
+    match ff {
+        Ok(mut f)=> {
+            let mut buffer = Vec::new();
 
-// write input message
-    hasher.input(&buffer);
-
-    // read hash digest and consume hasher
-    let output = hasher.result();
-    println!("HASH {:?}",&output);
-
-    buffer
+            // read the whole file
+            f.read_to_end(&mut buffer).expect("File unread");
+            f.seek(std::io::SeekFrom::Start(0));
+            let mut decoder = Decoder::new(&f);//BufReader::new(f));
+            decoder.read_info().expect("failed to read metadata");
+            let metadata = decoder.info().unwrap();
+            println!("{:?}",metadata);
+            // create a Sha512 object
+            let mut hasher = Sha512::default();
+        
+            // write input message
+            hasher.input(&buffer);
+            
+            // read hash digest and consume hasher
+            let output = hasher.result();
+            println!("HASH {:?}",&output);
+            Ok( NamedFile::open(&result.filename).unwrap())
+        },
+        
+        Err(e)=> {Err(NotFound(format!("404 {}",e)))}
+    }
 }
 
 #[post("/upload", data = "<data>")]//, format = "multipart/form-data")]
@@ -388,6 +395,7 @@ fn create_photo(conn: &DbConn,
     let mut  new_photo = NewPhoto {
         id:None,
         filename:fname.to_string() ,
+        filesize:Some(buf.len() as i32),
         ..Default::default()
     };
     let mut decoder = Decoder::new(curs);//BufReader::new(f));
