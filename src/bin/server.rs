@@ -212,7 +212,7 @@ fn get_photo(conn:DbConn, ID:i32) ->
     let result = PhotoTable
         .find(ID).first::<Photo>(&*conn)
         .expect("Error loading PhotoTable");
-    println!("{:?}", &result.filename);
+    println!("{:?}", &result);
     match rexif::parse_file(&result.filename) {
         Ok(exif) => {
             println!("{} {} exif entries: {}", &result.filename,
@@ -396,6 +396,12 @@ fn create_photo(conn: &DbConn,
         id:None,
         filename:fname.to_string() ,
         filesize:Some(buf.len() as i32),
+        /* 
+        timestamp - file time stamp
+        import_id - current time
+        event_id ?? 
+
+*/
         ..Default::default()
     };
     let mut decoder = Decoder::new(curs);//BufReader::new(f));
@@ -405,6 +411,29 @@ fn create_photo(conn: &DbConn,
         Some(m) => {
             new_photo.width = Some(m.width as i32);
             new_photo.height = Some(m.height as i32);
+
+            /*
+"exposure_time":1500212364,
+"orientation":1,
+"original_orientation":1,
+"transformations":null,
+"md5":"eca63be5041cd3744036987992c850f2",
+"thumbnail_md5":null,
+"time_created":1500216692,
+"exif_md5":"fa4a491a922e78c7b631c80353d64f60",
+"flags":0,
+"rating":0,
+"file_format":0,
+"title":null,
+"backlinks":null,
+"time_reimported":null,
+"editable_id":-1,
+"metadata_dirty":0,
+"developer":"SHOTWELL",
+"develop_shotwell_id":-1,
+"develop_camera_id":-1,
+"develop_embedded_id":-1,
+"comment":null},*/
         },
         None => {
             println!("nojpeg ");
