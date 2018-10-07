@@ -9,6 +9,7 @@ extern crate serde;
 //extern crate time;
 extern crate diesel;
 extern crate rustwell;
+#[macro_use]
 extern crate rocket_contrib;
 extern crate rexif;
 extern crate jpeg_decoder;
@@ -24,9 +25,10 @@ use multipart::server::Multipart;
 use multipart::server::save::Entries;
 use multipart::server::save::SaveResult::*;
 use rocket::Data;
+
 use rocket::http::{ContentType,Status};
-use rocket::response::{Stream,NamedFile};
-use rocket::response::status::{Custom,NotFound};
+use rocket::response::{Stream,Failure,NamedFile};
+use rocket::response::status::{NoContent,Custom,NotFound};
 
 use std::str;
 use std::env;
@@ -37,17 +39,14 @@ use rustwell::*;
 use self::models::*;
 use diesel::prelude::*;
 
-//use diesel::sqlite::SqliteConnection;
-//use rocket::response::content::Json;
-use rocket_contrib::Json;
+use rocket_contrib::{Json};// Value
 use sha2::{Sha512,Digest};
 
 use std::ops::Deref;
 use rocket::request::{self, FromRequest};
 use rocket::{Request, State, Outcome};
 use jpeg_decoder::Decoder;
-//extern crate rocket;
-//extern crate diesel;
+
 extern crate dotenv;
 extern crate r2d2_diesel;
 extern crate r2d2;
@@ -55,9 +54,8 @@ extern crate r2d2;
 use self::dotenv::dotenv;
 use r2d2_diesel::ConnectionManager;
 
-//use diesel::prelude::*;
-use diesel::sqlite::SqliteConnection;
 
+use diesel::sqlite::SqliteConnection;
 //use rocket::request::{self, FromRequest};
 //use rocket::{Request, State, Outcome};
 
@@ -197,20 +195,35 @@ fn list_some_photos(conn: DbConn, query:Option<PhotoQuery>) -> Json<Vec<Photo>> 
     }
             
     let results = bq.load::<Photo>(&*conn)          
-        .expect("Error loading PhotoTable");
-    
-//    results = match 
+        .expect("Error loading PhotoTable");    
     Json(results)
 }
-// TODO: get photo  for local file....
-// Result<NamedFile, NotFound<String>> {
-#[get("/photo/<ID>")]
-fn get_photo(conn:DbConn, ID:i32) ->
+
+/*
+
+#[put("/<id>", data = "<photo>")]
+fn update_photo(id: i32, photo: Json<Photo>, conn: DbConn) -> Json<Value> {
+    use self::schema::PhotoTable::dsl::*;
+    let update = Photo { id: id, ..photo.into_inner() };
+    Json(json!({
+        "success": Photo::update(id, update, &conn)
+    }))
+}
+
+#[put("/<id>", format = "application/json", data = "<photo>")]
+fn put(id: i32, photo: Json<Photo>, connection: DbConn) ->
+    std::result::Result<Json<Photo>, Failure> {
+    PhotoTable::update(id, photo.into_inner(), &connection)
+        .map(|photo| Json(photo))
+        .map_err(|error| error_status(error))
+}
+*/
+#[get("/photo/<id>")]
+fn get_photo(conn:DbConn, id:i32) ->
     std::result::Result<NamedFile,NotFound<String>>{
-    //, NotFound<String>> {
     use self::schema::PhotoTable::dsl::*;
     let result = PhotoTable
-        .find(ID).first::<Photo>(&*conn)
+        .find(id).first::<Photo>(&*conn)
         .expect("Error loading PhotoTable");
     println!("{:?}", &result);
     match rexif::parse_file(&result.filename) {
@@ -368,7 +381,34 @@ fn process_entries(entries: Entries, mut out: &mut Vec<u8>,conn:DbConn) -> io::R
     writeln!(out, "Entries processed@!!")
 }
 
-//    rocket::ignite().mount("/", routes![index]).launch();
+#[delete("/photo/<id>")]
+fn delete_photo(
+    id: i32, connection: DbConn
+) ->std::result::Result<NoContent, Failure> {
+    use self::schema::PhotoTable;//::dsl::*;
+    let del = PhotoTable::table.find(id);
+    println!("{:?}",del);
+    let f = del
+        .first::<Photo>(&*connection);
+    // THis is needed becayse this table query otherwise
+    // causes the first photo to be returned. 
+    println!("{:?}",f);
+    match f {
+        Ok(photo) => {
+            println!("{:?}",photo);
+            match photo.id {
+                id => match diesel::delete(&photo).execute(&*connection){
+                    Ok(_)=> Ok(NoContent),
+                    Err(_)=>Err(Failure (Status::InternalServerError))
+                },
+                _ =>Err(Failure (Status::InternalServerError))
+                    
+            }
+        },
+        Err(e) => Err(Failure (Status::InternalServerError))
+    }
+}
+
 
 const USAGE: &'static str = "
 Usage: slave [options] [<resource>] ...
@@ -413,8 +453,8 @@ fn create_photo(conn: &DbConn,
             new_photo.height = Some(m.height as i32);
 
             /*
-"exposure_time":1500212364,
-"orientation":1,
+"exposure_time":1500212364, - EXIF
+"orientation":1, EXIF
 "original_orientation":1,
 "transformations":null,
 "md5":"eca63be5041cd3744036987992c850f2",
@@ -461,7 +501,7 @@ fn create_photo(conn: &DbConn,
 
 fn main() {
     rocket::ignite()
-        .mount("/", routes![list_photos,get_photo,
+        .mount("/", routes![list_photos,get_photo,delete_photo,
                             list_some_photos,multipart_upload])
         .manage(init_pool())
         .launch();
